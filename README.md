@@ -1,4 +1,4 @@
-# Mieszanka kawy - Problem aktualizacyjny
+# Barista knapsack algorithm
 
 ## Opis
 
