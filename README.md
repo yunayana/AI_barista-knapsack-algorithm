@@ -44,6 +44,9 @@ Projekt używa **algorytmu plecakowego (0/1)** do rozwiązania problemu wyboru m
 
 Dodatkowo, w przypadku zmiany danych (np. nowego ziarna, zmiany ceny), zaimplementowane algorytmy są w stanie **szybko zaktualizować najlepszą mieszankę** bez konieczności pełnego przeliczenia wszystkich możliwych kombinacji.
 
-##Autorzy
+
+## Autorzy
+
 Valeriia Khylchenko
+
 Yana Trotsenko
