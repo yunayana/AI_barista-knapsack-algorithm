@@ -1,52 +1,56 @@
-# Barista knapsack algorithm
+# Barista Knapsack
 
-## Opis
+## Opis projektu
+Celem projektu jest stworzenie optymalnej mieszanki kawy przy zmieniających się danych dotyczących dostępnych ziaren. Każde ziarno kawy posiada określone parametry: waga, cena, intensywność smaku i kwasowość. Zadaniem jest wybranie najlepszej mieszanki przy ograniczeniach wagi i budżetu.
 
-Celem projektu jest rozwiązanie problemu stworzenia **najlepszej mieszanki kawy** przy zmieniających się danych. Początkowo mamy zestaw ziaren kawy, które mają przypisane parametry: waga, cena, intensywność smaku i kwasowość. Z tego zestawu należy wybrać mieszankę kawy, przy zachowaniu ograniczeń masy mieszanki i budżetu.
+Projekt pozwala również na szybkie dostosowanie mieszanki do zmian, takich jak:
+- dodanie nowych ziaren do oferty,
+- zmiana ceny istniejących ziaren,
+- zmiana maksymalnego budżetu.
 
-Po początkowej konfiguracji, pojawiają się zmiany w dostępnych danych:
-- Nowe ziarna kawy mogą zostać dodane do oferty,
-- Ceny ziaren mogą się zmieniać,
-- Maksymalny budżet może zostać zaktualizowany.
+Dzięki temu nie trzeba przeliczać wszystkich możliwych kombinacji od nowa.
 
-Projekt ten rozwiązuje problem **aktualizacji wyboru mieszanki kawy**, czyli jak efektywnie dostosować najlepszy wybór ziaren przy zmieniających się warunkach, bez konieczności ponownego liczenia wszystkiego od zera.
+---
+
+## Dane wejściowe
+
+Każde ziarno kawy posiada:
+- **Waga** (g),
+- **Cena** (zł),
+- **Intensywność smaku** (1–10),
+- **Kwasowość** (1–10).
+
+Ograniczenia mieszanki:
+- **Maksymalna waga mieszanki** (np. 250 g),
+- **Maksymalny budżet** (np. 40 zł).
+
+Ocena sensoryczna mieszanki jest obliczana na podstawie parametrów ziaren (wzór do ustalenia).
+
+---
 
 ## Problem
 
-1. Masz zestaw dostępnych ziaren kawy. Każde ziarno posiada następujące parametry:
-    - Waga (g),
-    - Cena (zł),
-    - Intensywność smaku (1–10),
-    - Kwasowość (1–10).
-   
-2. Posiadasz **ograniczenia**:
-    - **Maksymalna waga mieszanki** (np. 250 g),
-    - **Maksymalny budżet** (np. 40 zł).
+- Początkowo należy stworzyć mieszankę kawy maksymalizującą ocenę sensoryczną przy zachowaniu ograniczeń wagi i budżetu.
+- Po wprowadzeniu zmian w danych (nowe ziarna, zmiana cen, zmiana budżetu) należy szybko zaktualizować optymalną mieszankę, minimalizując czas obliczeń.
 
-3. **Ocena sensoryczna** mieszanki obliczana jest na podstawie wzoru:
-    ```
-    dopiszemy
-    ```
-
-4. **Początkowe zadanie**:
-    - Musisz stworzyć najlepszą możliwą mieszankę kawy, przy zachowaniu ograniczeń masy i budżetu.
-
-5. **Zmiany / Aktualizacje**:
-    - **Dodanie nowego ziarna** (np. cena 8 zł, waga 50 g, intensywność 9, kwasowość 6),
-    - **Zmiana ceny** ziaren w ofercie,
-    - **Zmniejszenie budżetu**.
-
-6. Twoim zadaniem jest **aktualizacja najlepszego wyboru ziaren** przy nowych danych, stosując odpowiedni algorytm, który minimalizuje czas obliczeń, nie licząc wszystkiego od nowa.
+---
 
 ## Algorytm
 
-Projekt używa **algorytmu plecakowego (0/1)** do rozwiązania problemu wyboru mieszanki kawy. Początkowo generujemy rozwiązanie, a następnie implementujemy **aktualizację wyników** przy zmieniających się danych.
+Projekt wykorzystuje **algorytm plecakowy (0/1)**:
 
-Dodatkowo, w przypadku zmiany danych (np. nowego ziarna, zmiany ceny), zaimplementowane algorytmy są w stanie **szybko zaktualizować najlepszą mieszankę** bez konieczności pełnego przeliczenia wszystkich możliwych kombinacji.
+1. **Początkowa selekcja mieszanki**  
+   Generowanie najlepszej możliwej kombinacji ziaren przy zadanych ograniczeniach.
 
+2. **Aktualizacja mieszanki przy zmianach danych**  
+   - Dodanie nowego ziarna,  
+   - Zmiana ceny istniejącego ziarna,  
+   - Zmiana maksymalnego budżetu.
+
+Algorytm jest zoptymalizowany do szybkiej aktualizacji wyników bez pełnego przeliczania wszystkich kombinacji.
+
+---
 
 ## Autorzy
-
-Valeriia Khylchenko
-
-Yana Trotsenko
+- **Valeriia Khylchenko**  
+- **Yana Trotsenko**
