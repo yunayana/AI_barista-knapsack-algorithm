@@ -37,7 +37,7 @@ Ocena sensoryczna mieszanki jest obliczana na podstawie parametrów ziaren (wzó
 
 ## Algorytm
 
-Projekt wykorzystuje **algorytm plecakowy (0/1)**:
+Projekt wykorzystuje **problem plecakowy (0/1)**:
 
 1. **Początkowa selekcja mieszanki**  
    Generowanie najlepszej możliwej kombinacji ziaren przy zadanych ograniczeniach.
