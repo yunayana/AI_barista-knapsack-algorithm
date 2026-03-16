@@ -1,129 +1,120 @@
+import csv
 import random
-
-
-# Parametry
-
-maxWeight = 250
-maxBudget = 40
-HMS = 5       # liczba rozwiązań w pamięci harmonii
-HMCR = 0.7    # 70% wybieramy z pamięci, 30% losowo
-iterations = 50  # liczba iteracji algorytmu
-
-
-# Klasa ziarna
+import sys
 
 class CoffeeBean:
-    def __init__(self, weight, price, intensity, acidity):
-        self.weight = weight
-        self.price = price
-        self.intensity = intensity
-        self.acidity = acidity
+    def __init__(self, name, weight, price, intensity, acidity):
+        self.name = name
+        self.weight = float(weight)
+        self.price = float(price)
+        self.sensory_score = float(intensity) + float(acidity)
 
+class BaristaKnapsackHS:
+    def __init__(self, csv_path, max_weight, max_budget, hms=10, hmcr=0.7, par=0.3):
+        self.csv_path = csv_path
+        self.max_weight = max_weight
+        self.max_budget = max_budget
+        self.hms = hms
+        self.hmcr = hmcr 
+        self.par = par
+        self.beans = self.load_data()
+        self.hm = []
 
-# Stała baza ziaren
+    def load_data(self):
+        beans = []
+        try:
+            with open(self.csv_path, mode='r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    beans.append(CoffeeBean(row['name'], row['weight'], row['price'], row['intensity'], row['acidity']))
+            print(f"[SYSTEM] Wczytano {len(beans)} ziaren z bazy.")
+            return beans
+        except Exception as e:
+            print(f"BŁĄD PLIKU: {e}")
+            return []
 
-beans = [
-    CoffeeBean(50, 8, 9, 6),
-    CoffeeBean(40, 5, 6, 3),
-    CoffeeBean(70, 10, 8, 7),
-    CoffeeBean(30, 6, 4, 5),
-    CoffeeBean(60, 7, 7, 6),
-    CoffeeBean(80, 11, 10, 8),
-    CoffeeBean(20, 4, 3, 4),
-    CoffeeBean(45, 6, 5, 7),
-    CoffeeBean(35, 5, 6, 4),
-    CoffeeBean(55, 9, 8, 5)
-]
+    def calculate_fitness(self, sol):
+        w, p, s = 0, 0, 0
+        for i, selected in enumerate(sol):
+            if selected:
+                w += self.beans[i].weight
+                p += self.beans[i].price
+                s += self.beans[i].sensory_score
+        if w > self.max_weight or p > self.max_budget or w == 0:
+            return 0
+        return s
 
- 
-# Funkcja oceny rozwiązania
+    def solve(self, iterations=10000):
+        if not self.beans: return None
+        
+        print(f"--- START (Waga: {self.max_weight}, Budżet: {self.max_budget}) ---")
+        
+        # 1. INTELIGENTNA INICJALIZACJA (dla dużych baz danych)
+        print("Inicjalizacja pamięci HM...")
+        while len(self.hm) < self.hms:
+            sol = [0] * len(self.beans)
+            # Dodajemy losowe ziarna, dopóki mieszczą się w limitach
+            indices = list(range(len(self.beans)))
+            random.shuffle(indices)
+            
+            curr_w, curr_p = 0, 0
+            for idx in indices:
+                if curr_w + self.beans[idx].weight <= self.max_weight and \
+                   curr_p + self.beans[idx].price <= self.max_budget:
+                    sol[idx] = 1
+                    curr_w += self.beans[idx].weight
+                    curr_p += self.beans[idx].price
+                
+            fit = self.calculate_fitness(sol)
+            if fit > 0:
+                self.hm.append({'sol': sol, 'fit': fit})
 
-def evaluate(solution):
-    total_weight = 0
-    total_price = 0
-    score = 0
-    for i in range(len(solution)):
-        if solution[i] == 1:
-            bean = beans[i]
-            total_weight += bean.weight
-            total_price += bean.price
-            score += bean.intensity + bean.acidity
-   
-    if total_weight > maxWeight or total_price > maxBudget:
-        return 0
-    return score
+        print(f"[OK] Pamięć HM gotowa. Rozpoczynam improwizację...")
 
-# Tworzenie losowego rozwiązania
+        # 2. GŁÓWNA PĘTLA (Algorytm Harmoniczny)
+        for i in range(1, iterations + 1):
+            new_sol = []
+            for j in range(len(self.beans)):
+                # 70% czasu wybieramy z pamięci (HMCR)
+                if random.random() < self.hmcr:
+                    random_idx = random.randint(0, self.hms - 1)
+                    val = self.hm[random_idx]['sol'][j]
+                    # 30% szans na "dostrojenie" (PAR)
+                    if random.random() < self.par:
+                        val = 1 - val
+                    new_sol.append(val)
+                else:
+                    # 30% czasu zupełnie losowo (Improwizacja)
+                    # Przy dużej bazie dajemy małą szansę na '1', żeby nie psuć limitów
+                    new_sol.append(1 if random.random() < 0.05 else 0)
+            
+            new_fit = self.calculate_fitness(new_sol)
+            if new_fit > 0:
+                self.hm.sort(key=lambda x: x['fit'])
+                if new_fit > self.hm[0]['fit']:
+                    self.hm[0] = {'sol': new_sol, 'fit': new_fit}
+            
+            # Pasek postępu
+            if i % 50 == 0 or i == iterations:
+                percent = int((i / iterations) * 100)
+                sys.stdout.write(f"\rOptymalizacja: {percent}% [{'#' * (percent // 5)}{'.' * (20 - percent // 5)}] Best Fit: {max(x['fit'] for x in self.hm):.1f}")
+                sys.stdout.flush()
 
-def random_solution():
-    return [random.randint(0,1) for _ in range(len(beans))]
+        print("\n--- ZAKOŃCZONO ---")
+        return max(self.hm, key=lambda x: x['fit'])
 
-
-# Tworzenie nowego rozwiązania według HMCR
-
-def create_solution(HM):
-    solution = []
-    for i in range(len(beans)):
-        if random.random() < HMCR:   # wybór z pamięci harmonii
-            selected_solution = random.choice(HM)
-            solution.append(selected_solution[i])
-        else:                         # losowo
-            solution.append(random.randint(0,1))
-    return solution
-
-
-# Inicjalizacja pamięci harmonii
- 
-HM = [random_solution() for _ in range(HMS)]
-HM_scores = [evaluate(sol) for sol in HM]
-
-
-# Główna pętla Harmony Search
-
-for _ in range(iterations):
-    new_sol = create_solution(HM)
-    new_score = evaluate(new_sol)
-
-    min_score = min(HM_scores)
-    if new_score > min_score:
-        min_index = HM_scores.index(min_score)
-        HM[min_index] = new_sol
-        HM_scores[min_index] = new_score
-
-
-# Wybór najlepszego rozwiązania
- 
-best_index = HM_scores.index(max(HM_scores))
-best_solution = HM[best_index]
-
- 
-# Wyświetlanie wyników
-
-print("\nDostępne ziarna kawy:\n")
-for i, bean in enumerate(beans):
-    print(f"ID:{i} | Waga:{bean.weight} | Cena:{bean.price} | Intensywność:{bean.intensity} | Kwasowość:{bean.acidity}")
-
-print("\nNajlepsze rozwiązanie:", best_solution)
-
-# Wyświetlenie szczegółów mieszanki
-total_weight = 0
-total_price = 0
-total_score = 0
-print("\nWybrane ziarna:")
-for i in range(len(best_solution)):
-    if best_solution[i] == 1:
-        bean = beans[i]
-        print(f"Ziarno {i} | Waga:{bean.weight} | Cena:{bean.price} | Intensywność:{bean.intensity} | Kwasowość:{bean.acidity}")
-        total_weight += bean.weight
-        total_price += bean.price
-        total_score += bean.intensity + bean.acidity
-
-print("\nPodsumowanie:")
-print(f"Waga: {total_weight}")
-print(f"Cena: {total_price}")
-print(f"Ocena sensoryczna: {total_score}")
-
-if total_weight <= maxWeight and total_price <= maxBudget:
-    print("✅ Mieszanka spełnia ograniczenia wagi i budżetu")
-else:
-    print("❌ Mieszanka przekracza ograniczenia")
+if __name__ == "__main__":
+    # Przywróciłem Twoje pierwotne limity
+    problem = BaristaKnapsackHS("coffee_beans.csv", max_weight=250, max_budget=40)
+    wynik = problem.solve(2000)
+    
+    if wynik:
+        print(f"\nSKŁAD MIESZANKI (Suma punktów: {wynik['fit']}):")
+        w_t, p_t = 0, 0
+        for i, s in enumerate(wynik['sol']):
+            if s:
+                b = problem.beans[i]
+                w_t += b.weight
+                p_t += b.price
+                print(f" * {b.name:12} | {b.weight}g | {b.price}zł | Sens: {b.sensory_score}")
+        print(f"\nPodsumowanie: Waga {w_t}/{problem.max_weight}g, Koszt {p_t}/{problem.max_budget}zł")
