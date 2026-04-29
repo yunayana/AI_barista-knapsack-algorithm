@@ -1,5 +1,5 @@
 # Barista Knapsack
-
+https://aibarista-knapsack-algorithm-ilnfgkjahsqcyagdjtgwn2.streamlit.app
 ## Opis projektu
 Celem projektu jest stworzenie optymalnej mieszanki kawy przy zmieniających się danych dotyczących dostępnych ziaren. Każde ziarno kawy posiada parametry: waga, cena, intensywność smaku i kwasowość. Zadaniem jest wybranie mieszanki maksymalizującej ocenę sensoryczną przy ograniczeniach wagi i budżetu.
 
